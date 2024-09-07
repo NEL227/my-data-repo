@@ -1,7 +1,7 @@
 import os
 import json
 
-sorted_data_path = os.path.join(os.path.dirname(__file__), 'sorted_data', 'sorted_data.json')
+sorted_data_path = os.path.join(os.path.dirname(__file__), 'sorted_data.json')
 collected_data_path = os.path.join(os.path.dirname(__file__), 'collected_data.txt')
 
 def read_sorted_data():
