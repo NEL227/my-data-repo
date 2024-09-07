@@ -88,6 +88,19 @@ def configure_git():
     except subprocess.CalledProcessError as e:
         print(f"Gitの設定に失敗しました: {e}")
 
+def git_commit_and_push():
+    """変更をコミットし、リモートリポジトリにプッシュする"""
+    try:
+        subprocess.run(['git', 'add', sorted_data_path], check=True)
+        subprocess.run(['git', 'add', collected_data_path], check=True)
+        
+        subprocess.run(['git', 'commit', '-m', 'Update sorted_data.json and clear collected_data.txt'], check=True)
+        
+        subprocess.run(['git', 'push'], check=True)
+        print("変更をコミットし、プッシュしました。")
+    except subprocess.CalledProcessError as e:
+        print(f"コミットまたはプッシュに失敗しました: {e}")
+
 def main():
     configure_git()
 
@@ -104,6 +117,8 @@ def main():
     
         print(f"{collected_data_path} を空にしています...")
         clear_collected_data()
+
+        git_commit_and_push()
     else:
         print("新規データがないため、処理をスキップしました。")
     
