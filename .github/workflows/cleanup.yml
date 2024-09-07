@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC時間で毎日19時 = 日本時間の午前4時
     - cron: '0 19 * * *'
-  workflow_dispatch:  # 手動実行も可能
+  workflow_dispatch:  # 手動実行可
 
 jobs:
   run-script:
@@ -38,4 +38,4 @@ jobs:
         git commit -m "Automated commit from GitHub Actions"
         git push
       env:
-        GITHUB_TOKEN: ${{ MY_GITHUB_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
