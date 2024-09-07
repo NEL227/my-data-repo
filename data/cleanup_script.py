@@ -2,7 +2,6 @@ import os
 import json
 import subprocess
 
-# ファイルパス
 sorted_data_path = os.path.join(os.path.dirname(__file__), 'sorted_data.json')
 collected_data_path = os.path.join(os.path.dirname(__file__), 'collected_data.txt')
 
@@ -24,7 +23,7 @@ def read_sorted_data():
 def read_collected_data():
     """collected_data.txtからデータを読み込み"""
     new_data = {}
-    seen_lines = set()  # 重複を排除
+    seen_lines = set()
     if os.path.exists(collected_data_path):
         try:
             with open(collected_data_path, 'r', encoding='utf-8') as file:
@@ -36,7 +35,6 @@ def read_collected_data():
                     
                     words = line.split(' ')
                     
-                    # '〇〇用' とその後にスペースがある場合、次のワードと結合
                     main_word = words[0]
                     if main_word.endswith("用") and len(words) > 1:
                         main_word += words[1] 
@@ -81,17 +79,18 @@ def clear_collected_data():
     except IOError as e:
         print(f"collected_data.txtの削除に失敗しました: {e}")
 
-def commit_and_push_changes():
-    """変更をコミットしてリモートリポジトリにプッシュする"""
+def configure_git():
+    """Gitのユーザー名とメールアドレスを設定する"""
     try:
-        subprocess.run(['git', 'add', sorted_data_path, collected_data_path], check=True)
-        subprocess.run(['git', 'commit', '-m', 'Update sorted_data.json and clear collected_data.txt'], check=True)
-        subprocess.run(['git', 'push'], check=True)
-        print("変更をリモートリポジトリにプッシュしました。")
+        subprocess.run(['git', 'config', '--global', 'user.name', 'NEL227'], check=True)
+        subprocess.run(['git', 'config', '--global', 'user.email', 'no-reply@example.com'], check=True)
+        print("Gitのユーザー名とメールアドレスを設定しました。")
     except subprocess.CalledProcessError as e:
-        print(f"変更のコミットまたはプッシュに失敗しました: {e}")
+        print(f"Gitの設定に失敗しました: {e}")
 
 def main():
+    configure_git()
+
     print(f"{sorted_data_path} の既存の内容を読み込んでいます...")
     sorted_data = read_sorted_data()
     
@@ -105,8 +104,6 @@ def main():
     
         print(f"{collected_data_path} を空にしています...")
         clear_collected_data()
-        
-        commit_and_push_changes()
     else:
         print("新規データがないため、処理をスキップしました。")
     
