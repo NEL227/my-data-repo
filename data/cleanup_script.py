@@ -1,8 +1,8 @@
 import os
 import json
 
-sorted_data_path = os.path.join(os.path.dirname(__file__), 'data', 'sorted_data.json')
-collected_data_path = os.path.join(os.path.dirname(__file__), 'data', 'collected_data.txt')
+sorted_data_path = os.path.join(os.path.dirname(__file__), 'sorted_data', 'sorted_data.json')
+collected_data_path = os.path.join(os.path.dirname(__file__), 'collected_data.txt')
 
 def read_sorted_data():
     """sorted_data.jsonからデータを読み込む"""
