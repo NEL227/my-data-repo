@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC時間で毎日19時 = 日本時間の午前4時
     - cron: '0 19 * * *'
-  workflow_dispatch:  # 手動実行可
+  workflow_dispatch:  # 手動実行も可
 
 jobs:
   run-script:
