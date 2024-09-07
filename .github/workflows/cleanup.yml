@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC時間で毎日19時 = 日本時間の午前4時
     - cron: '0 19 * * *'
-  workflow_dispatch:  # 手動実可
+  workflow_dispatch:  # 手動実行も可能
 
 jobs:
   run-script:
@@ -26,3 +26,16 @@ jobs:
     - name: Count and cleanup
       run: |
         python data/cleanup_script.py
+
+    - name: Configure Git
+      run: |
+        git config user.name "NEL227"
+        git config user.email "no-reply@example.com"
+        
+    - name: Commit and push changes
+      run: |
+        git add .
+        git commit -m "Automated commit from GitHub Actions"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ MY_GITHUB_PAT }}
