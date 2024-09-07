@@ -74,7 +74,7 @@ def clear_collected_data():
     """collected_data.txtを空にする"""
     try:
         with open(collected_data_path, 'w', encoding='utf-8') as file:
-            file.write('')
+            file.truncate(0)  
         print(f"{collected_data_path} を空にしました。")
     except IOError as e:
         print(f"collected_data.txtの削除に失敗しました: {e}")
