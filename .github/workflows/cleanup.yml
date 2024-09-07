@@ -2,9 +2,9 @@ name: Count and cleanup
 
 on:
   schedule:
-    # 午前4時実行
+    # UTC時間で毎日19時 = 日本時間の午前4時
     - cron: '0 19 * * *'
-  workflow_dispatch:  # 手動実行可
+  workflow_dispatch:  # 手動実可
 
 jobs:
   run-script:
@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4  
 
     - name: Setup Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4  
       with:
         python-version: '3.x'
 
@@ -23,6 +23,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
 
-    - name: Run cleanup script
+    - name: Count and cleanup
       run: |
         python data/cleanup_script.py
