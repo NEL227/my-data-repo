@@ -35,7 +35,7 @@ jobs:
     - name: Commit and push changes
       run: |
         git add .
-        git commit -m "Automated commit from GitHub Actions"
-        git push
+        git commit -m "Automated commit from GitHub Actions" || echo "No changes to commit"
+        git push --force
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
