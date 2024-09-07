@@ -36,6 +36,6 @@ jobs:
       run: |
         git add .
         git commit -m "Automated commit from GitHub Actions" || echo "No changes to commit"
-        git push --force
+        git push
       env:
         GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
