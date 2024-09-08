@@ -12,7 +12,6 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === 'GET') {
-            // GitHubからファイルのSHAと内容を取得
             const { data } = await octokit.repos.getContent({
                 owner,
                 repo: REPO_NAME,
@@ -24,7 +23,6 @@ export default async function handler(req, res) {
         } else if (req.method === 'PUT') {
             const { sha, newData } = req.body;
 
-            // 新しいデータをアップロード
             await octokit.repos.createOrUpdateFileContents({
                 owner,
                 repo: REPO_NAME,
@@ -40,7 +38,7 @@ export default async function handler(req, res) {
             res.status(405).end(`Method ${req.method} Not Allowed`);
         }
     } catch (error) {
-        console.error(error);
+        console.error("API Error:", error);
         res.status(500).json({ error: 'Error updating file' });
     }
 }
