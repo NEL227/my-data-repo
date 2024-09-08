@@ -18,8 +18,8 @@ jobs:
       - name: Commit and Push changes
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: Your Name
-          author_email: your-email@example.com
+          author_name: 'GitHub Actions Bot'
+          author_email: 'actions@example.com'
           message: 'Update collected_data.txt with new data'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
