@@ -17,7 +17,7 @@ jobs:
 
     - name: Make API request
       run: |
-        curl -X POST "https://api.github.com/repos/NEL227/my-data-repo/contents/data/collected_data.txt" \
-        -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+        curl -X PUT "https://api.github.com/repos/NEL227/my-data-repo/contents/data/collected_data.txt" \
+        -H "Authorization: token ${{ secrets.API_SECRET_KEY }}" \
         -H "Content-Type: application/json" \
-        -d '{"message": "Update data", "content": "base64_encoded_content"}'
+        -d '{"message": "Update data", "content": "base64_encoded_content", "sha": "file_sha_if_needed"}'
