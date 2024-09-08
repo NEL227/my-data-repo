@@ -26,4 +26,4 @@ jobs:
           author_email: 'actions@example.com'
           message: 'Update collected_data.txt with new data'
         env:
-          GITHUB_TOKEN: ${{ secrets.API_SECRET_KEY }}
+          API_SECRET_KEY: ${{ secrets.API_SECRET_KEY }}
