@@ -3,27 +3,29 @@ name: Update Data
 on:
   workflow_dispatch:
     inputs:
-      data:
-        description: 'New data to append'
+      new_data:
+        description: 'Data to be added'
         required: true
+        type: string
 
 jobs:
-  update:
+  update_data:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Append Data to File
+      - name: Update data file
         run: |
-          echo "${{ github.event.inputs.data }}" >> data/collected_data.txt
+          echo "${{ github.event.inputs.new_data }}" >> data/collected_data.txt
 
-      - name: Commit and Push changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: 'GitHub Actions Bot'
-          author_email: 'actions@example.com'
-          message: 'Update collected_data.txt with new data'
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add data/collected_data.txt
+          git commit -m "Update data from GitHub Action"
+          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
