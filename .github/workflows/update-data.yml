@@ -2,6 +2,10 @@ name: Update Data
 
 on:
   workflow_dispatch:
+    inputs:
+      data:
+        description: 'Input data to append to file'
+        required: true
 
 jobs:
   update:
@@ -11,10 +15,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Update Data File
+      - name: Append Data to File
         run: |
           echo "${{ github.event.inputs.data }}" >> data/collected_data.txt
-          
+
       - name: Commit and Push changes
         uses: EndBug/add-and-commit@v9
         with:
