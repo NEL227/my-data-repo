@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       new_data:
-        description: 'The new data to append'
+        description: '追記するデータ'
         required: true
 
 jobs:
