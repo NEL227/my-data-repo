@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+import re
 
 sorted_data_path = os.path.join(os.path.dirname(__file__), 'sorted_data.json')
 collected_data_path = os.path.join(os.path.dirname(__file__), 'collected_data.txt')
@@ -33,7 +34,7 @@ def read_collected_data():
                         continue
                     seen_lines.add(line) 
                     
-                    words = line.split(' ')
+                    words = re.split(r'[ 　]+', line)
                     
                     main_word = words[0]
                     if main_word.endswith("用") and len(words) > 1:
