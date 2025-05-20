@@ -22,7 +22,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_URL = 'https://raw.githubusercontent.com/NEL227/work-toolkit/main/業務効率化ツール本体.user.js';
+    const SCRIPT_URL = 'raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツール本体.user.js';
     const STORAGE_KEY_CODE = 'cached_script_code';
     const STORAGE_KEY_DATE = 'cached_script_date';
     const STORAGE_KEY_VERSION = 'cached_script_version';
