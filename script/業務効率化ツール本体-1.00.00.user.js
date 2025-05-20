@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.00.00
+// @version      1.00.01
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @license      MIT
