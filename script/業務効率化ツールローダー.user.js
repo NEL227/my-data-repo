@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         業務効率化ツール統合版
+// @name         業務効率化ツールローダー
 // @namespace    http://tampermonkey.net/
 // @version      1.00
-// @description  業務を効率化する各種機能を自動更新する統合版
+// @description  業務を効率化する各種機能を自動更新するローダー
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
