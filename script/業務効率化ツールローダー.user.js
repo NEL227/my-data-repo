@@ -15,8 +15,8 @@
 // @connect      raw.githubusercontent.com
 // @connect      work-toolkit.vercel.app
 // @run-at       document-end
-// @updateURL    https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツール統合版-1.00.user.js
-// @downloadURL  https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツール統合版-1.00.user.js
+// @updateURL    https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツールローダー.user.js
+// @downloadURL  https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツールローダー.user.js
 // ==/UserScript==
 
 (function () {
