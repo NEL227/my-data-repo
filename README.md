@@ -12,7 +12,7 @@
 - [Chrome](https://chrome.google.com/webstore/detail/dhdgffkkebhmkfjojejmpbldmpobfkfo)  
 - [Firefox](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/)
 
-2. **ご使用のブラウザで Tampermonkey を「開発者モード」で有効にしてください。**
+2. **ご使用のブラウザで 「デベロッパーモード」または「開発者モード」を有効にしてください。**
 
 Chromeの場合：  
 - アドレスバーに `chrome://extensions/` と入力し、Tampermonkeyの右上にある「開発者モード」をオンにします。  
@@ -21,7 +21,7 @@ Chromeの場合：
 3. **以下のリンクをクリックしてスクリプトをインストールしてください：**  
 👉 [業務効率化ツール統合版（ローダー）をインストール](https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツールローダー.user.js)
 
-> 本ツールは Chrome を使用して動作確認を行っております。他のブラウザ（例：Firefoxなど）でも基本的には動作するはずですが、挙動が異なる場合がある点をあらかじめご了承ください。
+> 本ツールは Chrome を使用して動作確認を行っております。他のブラウザ（例：Edge、Opera、Firefoxなど）でも基本的には動作するはずですが、挙動が異なる場合がある点をあらかじめご了承ください。
 
 ---
 
