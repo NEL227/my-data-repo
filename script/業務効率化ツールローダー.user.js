@@ -2,7 +2,7 @@
 // @name         業務効率化ツールローダー
 // @namespace    http://tampermonkey.net/
 // @version      1.00
-// @description  業務を効率化する各種機能を自動更新するローダー
+// @description  業務支援ツールを自動で取得・更新するローダースクリプト
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
@@ -22,7 +22,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_URL = 'raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツール本体.user.js';
+    const SCRIPT_URL = 'https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツール本体.user.js';
     const STORAGE_KEY_CODE = 'cached_script_code';
     const STORAGE_KEY_DATE = 'cached_script_date';
     const STORAGE_KEY_VERSION = 'cached_script_version';
