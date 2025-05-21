@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.00.02
+// @version      1.00.00
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -9694,30 +9694,7 @@ transition: all 0.3s ease-in-out;
         }
     }
 
-    function jyuchuDateCheck(){
-
-    window.addEventListener('load', () => {
-        const inputDate = document.getElementById('jyuchu_bi');
-        if (!inputDate) return;
-
-        let dismissedDateStr = null;
-        const periodMonths = 2;
-
-        const checkDate = () => {
-            const dateStr = inputDate.value;
-            const dateParts = dateStr.split('/');
-            if (dateParts.length !== 3) return;
-
-            const jyuchuDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-            const now = new Date();
-            const periodAgo = new Date();
-            periodAgo.setMonth(periodAgo.getMonth() - periodMonths);
-
-            if (jyuchuDate < periodAgo) {
-                if (dismissedDateStr === dateStr) return;
-                showWarningBox(dateStr);
-            } else {    function jyuchuDateCheck(){
-
+    function jyuchuDateCheck() {
         window.addEventListener('load', () => {
             const inputDate = document.getElementById('jyuchu_bi');
             if (!inputDate) return;
@@ -9751,41 +9728,41 @@ transition: all 0.3s ease-in-out;
                 const box = document.createElement('div');
                 box.id = 'jyuchu_warning_box';
                 box.style.cssText = `
-               position: fixed;
-               top: 100px;
-               left: 50%;
-               transform: translateX(-50%);
-               background-color: #fff3cd;
-               color: #856404;
-               border: 1px solid #ffeeba;
-               padding: 16px 24px;
-               font-weight: bold;
-               font-size: 16px;
-               text-align: center;
-               border-radius: 8px;
-               z-index: 99999;
-               box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-           `;
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #fff3cd;
+                color: #856404;
+                border: 1px solid #ffeeba;
+                padding: 16px 24px;
+                font-weight: bold;
+                font-size: 16px;
+                text-align: center;
+                border-radius: 8px;
+                z-index: 99999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            `;
 
                 const closeBtn = document.createElement('button');
                 closeBtn.textContent = '×';
                 closeBtn.style.cssText = `
-               position: absolute;
-               top: 4px;
-               right: 4px;
-               width: 28px;
-               height: 28px;
-               background: transparent;
-               border: none;
-               font-size: 24px;
-               font-weight: bold;
-               color: #856404;
-               cursor: pointer;
-               line-height: 28px;
-               padding: 0;
-               user-select: none;
-               text-align: center;
-           `;
+                position: absolute;
+                top: 4px;
+                right: 4px;
+                width: 28px;
+                height: 28px;
+                background: transparent;
+                border: none;
+                font-size: 24px;
+                font-weight: bold;
+                color: #856404;
+                cursor: pointer;
+                line-height: 28px;
+                padding: 0;
+                user-select: none;
+                text-align: center;
+            `;
                 closeBtn.onclick = () => {
                     dismissedDateStr = dateStr;
                     box.remove();
@@ -9794,8 +9771,8 @@ transition: all 0.3s ease-in-out;
 
                 const message = document.createElement('div');
                 message.innerHTML = `
-            この伝票の受注日は <strong>${periodMonths}ヶ月以上前</strong> の日付です。<br>
-            再検索をお願いします。<br><br>
+                この伝票の受注日は <strong>${periodMonths}ヶ月以上前</strong> の日付です。<br>
+                再検索をお願いします。<br><br>
             `;
                 box.appendChild(message);
 
@@ -9816,10 +9793,14 @@ transition: all 0.3s ease-in-out;
                 const searchInput = document.getElementById('sea_jyuchu_search_field02');
                 const searchButton = document.getElementById('ne_dlg_btn2_searchJyuchuDlg');
 
-                if (!denpyoInput || !searchInput || !searchButton) return alert('必要な要素が見つかりません');
+                if (!denpyoInput || !searchInput || !searchButton) {
+                    return alert('必要な要素が見つかりません');
+                }
 
                 const denpyoValue = denpyoInput.value.trim();
-                if (!denpyoValue) return alert('伝票番号が空です');
+                if (!denpyoValue) {
+                    return alert('伝票番号が空です');
+                }
 
                 searchInput.value = denpyoValue;
                 searchButton.click();
@@ -9852,9 +9833,7 @@ transition: all 0.3s ease-in-out;
             };
 
             checkDate();
-
             setInterval(checkDate, 1000);
-
         });
     }
 
