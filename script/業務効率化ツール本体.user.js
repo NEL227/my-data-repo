@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.00.00
+// @version      1.00.01
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -9700,7 +9700,7 @@ transition: all 0.3s ease-in-out;
             if (!inputDate) return;
 
             let dismissedDateStr = null;
-            const periodMonths = 3;
+            const periodMonths = 2;
 
             const checkDate = () => {
                 const dateStr = inputDate.value;
