@@ -47,8 +47,7 @@ Tampermonkey によってインストール画面が表示されるので
 「インストール」をクリックするだけでOKです。
 
 > Firefox では特別な設定は不要ですが、Tampermonkey のバージョンが古い場合は正常に動作しないことがあります。  
-> 通常は自動で更新されますが、動作に問題がある場合は以下から最新版に更新してください：  
-> 👉 [Tampermonkey（Firefox用）](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/)
+> 通常は自動で更新されますが、動作に問題がある場合は公式ページから最新版に更新してください。
 
 ---
 
