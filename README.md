@@ -40,7 +40,7 @@ GitHub 上のスクリプトを Tampermonkey が正しく読み込むために�
 
 #### ✅ Firefox の場合：
 
-Tampermonkey は Firefox でそのまま動作します。
+Tampermonkey は Firefox でそのまま動作します。  
 **開発者モードを有効にする必要はありません**。
 
 Tampermonkey によってインストール画面が表示されるので
