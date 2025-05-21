@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.00.01
+// @version      1.00.02
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @license      MIT
@@ -9699,11 +9699,34 @@ transition: all 0.3s ease-in-out;
 
     function jyuchuDateCheck(){
 
+    window.addEventListener('load', () => {
+        const inputDate = document.getElementById('jyuchu_bi');
+        if (!inputDate) return;
+
+        let dismissedDateStr = null;
+        const periodMonths = 3;
+
+        const checkDate = () => {
+            const dateStr = inputDate.value;
+            const dateParts = dateStr.split('/');
+            if (dateParts.length !== 3) return;
+
+            const jyuchuDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            const now = new Date();
+            const periodAgo = new Date();
+            periodAgo.setMonth(periodAgo.getMonth() - periodMonths);
+
+            if (jyuchuDate < periodAgo) {
+                if (dismissedDateStr === dateStr) return;
+                showWarningBox(dateStr);
+            } else {    function jyuchuDateCheck(){
+
         window.addEventListener('load', () => {
             const inputDate = document.getElementById('jyuchu_bi');
             if (!inputDate) return;
 
             let dismissedDateStr = null;
+            const periodMonths = 3;
 
             const checkDate = () => {
                 const dateStr = inputDate.value;
@@ -9712,10 +9735,10 @@ transition: all 0.3s ease-in-out;
 
                 const jyuchuDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
                 const now = new Date();
-                const sixMonthsAgo = new Date();
-                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                const periodAgo = new Date();
+                periodAgo.setMonth(periodAgo.getMonth() - periodMonths);
 
-                if (jyuchuDate < sixMonthsAgo) {
+                if (jyuchuDate < periodAgo) {
                     if (dismissedDateStr === dateStr) return;
                     showWarningBox(dateStr);
                 } else {
@@ -9724,7 +9747,6 @@ transition: all 0.3s ease-in-out;
                     dismissedDateStr = null;
                 }
             };
-
 
             const showWarningBox = (dateStr) => {
                 if (document.getElementById('jyuchu_warning_box')) return;
@@ -9775,8 +9797,8 @@ transition: all 0.3s ease-in-out;
 
                 const message = document.createElement('div');
                 message.innerHTML = `
-                この伝票の受注日は <strong>6ヶ月以上前</strong> の日付です。<br>
-                再検索をお願いします。<br><br>
+            この伝票の受注日は <strong>${periodMonths}ヶ月以上前</strong> の日付です。<br>
+            再検索をお願いします。<br><br>
             `;
                 box.appendChild(message);
 
