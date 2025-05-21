@@ -45,8 +45,8 @@ Tampermonkey は Firefox でもそのまま動作します。
 
 Tampermonkey によってインストール画面が表示されるので、「インストール」をクリックするだけでOKです。
 
-> Firefox では特別な設定は不要ですが、Tampermonkey のバージョンが古い場合は正常に動作しないことがあります。
-> 通常は自動で更新されますが、動作に問題がある場合は以下から最新版に更新してください：
+> Firefox では特別な設定は不要ですが、Tampermonkey のバージョンが古い場合は正常に動作しないことがあります。  
+> 通常は自動で更新されますが、動作に問題がある場合は以下から最新版に更新してください：  
 > 👉 [Tampermonkey（Firefox用）](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/)
 
 ---
@@ -79,4 +79,4 @@ Tampermonkey のインストール確認画面が表示されますので、「�
 
 本ツールは、一部の Web サイトに対して機能を追加・変更するスクリプトツールです。  
 動作に不具合などが生じる可能性もございますので、気になる点やご要望がありましたら、  
-[Issue](https://github.com/NEL227/work-toolkit/issues) またはTeamsよりお気軽にお知らせください。
+[Issue](https://github.com/NEL227/work-toolkit/issues) または Teamsよりお気軽にお知らせください。
