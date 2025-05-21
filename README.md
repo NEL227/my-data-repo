@@ -16,7 +16,7 @@
 2. **ご使用のブラウザで 「デベロッパーモード」または「開発者モード」を有効にしてください。**
 
 Chromeの場合：  
-- アドレスバーに `chrome://extensions/` と入力し、Tampermonkeyの右上にある「開発者モード」をオンにします。  
+- アドレスバーに `chrome://extensions/` と入力し、Tampermonkeyの右上にある「デベロッパーモード」をオンにします。  
 ※ GitHubのスクリプトをオンラインで読み込むため、Tampermonkeyがこのモードで動作している必要があります。
 
 3. **以下のリンクをクリックしてスクリプトをインストールしてください：**  
@@ -47,4 +47,4 @@ Chromeの場合：
 
 本ツールは、一部のWebサイトに対して機能を追加・変更するユーザースクリプトです。  
 動作に不具合などが生じる可能性もございますので、気になる点やご要望がありましたら、  
-[Issue](https://github.com/NEL227/work-toolkit/issues) か Teams よりお気軽にお知らせください。
+[Issue](https://github.com/NEL227/work-toolkit/issues) かTeamsよりお気軽にお知らせください。
