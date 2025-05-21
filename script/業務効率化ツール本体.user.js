@@ -14,8 +14,6 @@
 // @run-at       document-end
 // @connect      plus-nao.com
 // @connect      work-toolkit.vercel.app
-// @downloadURL https://update.greasyfork.org/scripts/536013/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88%E7%B5%B1%E5%90%88%E7%89%88%28%E4%BB%AE%29.user.js
-// @updateURL https://update.greasyfork.org/scripts/536013/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88%E7%B5%B1%E5%90%88%E7%89%88%28%E4%BB%AE%29.meta.js
 // ==/UserScript==
 
 (async function () {
@@ -9704,7 +9702,7 @@ transition: all 0.3s ease-in-out;
         if (!inputDate) return;
 
         let dismissedDateStr = null;
-        const periodMonths = 3;
+        const periodMonths = 2;
 
         const checkDate = () => {
             const dateStr = inputDate.value;
