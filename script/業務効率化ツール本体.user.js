@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.00.01
+// @version      1.00.02
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -122,7 +122,7 @@
 
             <section style="margin-bottom: 16px;">
               <details id="listingTeam">
-                <summary style="font-weight: bold; cursor: pointer;">出品チーム用(仮)</summary>
+                <summary style="font-weight: bold; cursor: pointer;">出品チーム用</summary>
                 <div style="padding-left: 20px; margin-top: 10px;">
                   ${createCheckboxAndDetails('modifyHelpLinks', 'ヘルプリンク更新', 'ヘルプリンクの更新と追加')}
                   ${createCheckboxAndDetails('enhanceTitleEditor', 'タイトルの機能拡張', '入力されている全文をポップアップ表示<br>不要なスペースと重複ワードの検出・削除<br>全角スペースの半角化<br>文字数カウンターを追加<br>ブラウザタブタイトルにコードを記載')}
@@ -152,7 +152,7 @@
 
             <section style="margin-bottom: 16px;">
               <details id="fixTeam">
-                <summary style="font-weight: bold; cursor: pointer;">修正チーム用(仮)</summary>
+                <summary style="font-weight: bold; cursor: pointer;">修正チーム用</summary>
                 <div style="padding-left: 20px; margin-top: 10px;">
                   ${createCheckboxAndDetails('axisCodeErrorCheck', '縦横軸コード管理エラーチェック', 'byte数やスペース・記号・機種依存文字を検出<br>いずれかに該当する場合はSKUを追加できないようにする')}
                   ${createCheckboxAndDetails('autoReplaceAxisCode', '縦横軸コード管理のコード自動置換', 'SKU追加時に項目名の入力からコードに自動置換')}
@@ -162,7 +162,7 @@
 
             <section style="margin-bottom: 16px;">
               <details id="conciergeTeam">
-                <summary style="font-weight: bold; cursor: pointer;">コンシェルジュ用(仮)</summary>
+                <summary style="font-weight: bold; cursor: pointer;">コンシェルジュ用</summary>
                 <div style="padding-left: 20px; margin-top: 10px;">
                   ${createCheckboxAndDetails('denpyoUpdateGuard', '伝票更新警告機能', '誤操作防止のため納品書印刷済み・印刷待ちの伝票に対して<br>更新前に警告を表示')}
                   ${createCheckboxAndDetails('applyTagStyle', '旧伝票タグ整列', '旧伝票のタグのスタイルを整えてトラディショナルのようにする')}
