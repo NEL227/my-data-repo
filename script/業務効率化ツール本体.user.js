@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.00.02
+// @version      1.01.00
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -24,7 +24,8 @@
         "personalMemo", "removeUnwantedImgs","loadAllImages", "dlMergedImgs", "imgSizeCheck", "enhanceNewAlpha",
         "orderStatusCheck", "bulkOrderCheck", "axisReminder", "nonColorSizeReminder",
         "axisCodeErrorCheck", "autoReplaceAxisCode","denpyoUpdateGuard","applyTagStyle","denpyoReflector",
-        "jyuchuDateCheck"
+        "jyuchuDateCheck", "freeStockCheck"
+
     ];
 
     const settings = {};
@@ -168,6 +169,7 @@
                   ${createCheckboxAndDetails('applyTagStyle', '旧伝票タグ整列', '旧伝票のタグのスタイルを整えてトラディショナルのようにする')}
                   ${createCheckboxAndDetails('denpyoReflector', '複写伝票反映', '複写先とその元に伝票番号をワンクリックで自動入力')}
                   ${createCheckboxAndDetails('jyuchuDateCheck', '受注日チェック', '受注日が6ヶ月以上前の場合は警告を表示<br>再検索ボタンで最新の受注日を検索して開き直す')}
+                  ${createCheckboxAndDetails('freeStockCheck', 'フリー在庫数チェック', '商品コードをダブルクリックで、その他情報にフリー在庫数を記載')}
                 </div>
               </details>
             </section>
@@ -518,6 +520,11 @@
                     name: '受注日チェック',
                     isEnabled: () => settings.jyuchuDateCheck,
                     run: jyuchuDateCheck,
+                },
+                {
+                    name: 'フリー在庫数チェック',
+                    isEnabled: () => settings.freeStockCheck,
+                    run: freeStockCheck,
                 },
             ],
         },
@@ -9835,6 +9842,169 @@ transition: all 0.3s ease-in-out;
             checkDate();
             setInterval(checkDate, 1000);
         });
+    }
+
+    function freeStockCheck(){
+
+        function insertFreeStockRow() {
+            const fontBold = document.querySelector('#subinfo font b');
+            if (!fontBold) return;
+
+            const td = fontBold.closest('td');
+            const table = td?.closest('table');
+            if (!table) return;
+
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+
+            const productText = td.textContent.trim();
+            const match = productText.match(/^([^\s　]+)/);
+            const productCode = match ? match[1].trim() : '';
+
+            if ([...tbody.querySelectorAll('tr')].some(tr => tr.textContent.includes('フリー在庫数'))) return;
+
+            const newRow = document.createElement('tr');
+            newRow.style.background = '#FFFFFF';
+            newRow.style.height = '10px';
+
+            const newTd = document.createElement('td');
+            newTd.style.padding = '1px';
+            newTd.setAttribute('align', 'left');
+            newTd.textContent = 'フリー在庫数：';
+
+            newRow.appendChild(newTd);
+
+            const trList = tbody.querySelectorAll('tr');
+            if (trList.length >= 3) {
+                const referenceTr = trList[2];
+                referenceTr.parentNode.insertBefore(newRow, referenceTr.nextSibling);
+            } else {
+                tbody.appendChild(newRow);
+            }
+
+            adjustTableSize();
+
+            const popupTrigger = document.getElementById('sub_menu_03_02_lnk');
+            if (popupTrigger) {
+                popupTrigger.click();
+                newTd.textContent = 'フリー在庫数：検索中…';
+                waitPopupAndSearch(productCode, newTd);
+            } else {
+                console.warn('商品検索リンクが見つかりません');
+            }
+        }
+
+        function waitPopupAndSearch(productCode, tdToUpdate) {
+            const popupId = 'ne_dlg_searchSyohinDlg';
+
+            const observer = new MutationObserver((mutations, obs) => {
+                const popup = document.getElementById(popupId);
+                if (popup && popup.style.visibility === 'visible') {
+                    obs.disconnect();
+                    performSearchInPopup(productCode, tdToUpdate);
+                }
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            const popup = document.getElementById(popupId);
+            if (popup && popup.style.visibility === 'visible') {
+                observer.disconnect();
+                performSearchInPopup(productCode, tdToUpdate);
+            }
+        }
+
+        function performSearchInPopup(productCode, tdToUpdate) {
+            const popup = document.getElementById('ne_dlg_searchSyohinDlg');
+
+            const originalDisplay = popup ? popup.style.display : '';
+
+            if (popup) {
+                popup.style.display = 'none';
+            }
+
+            const input = document.querySelector('#ne_dlg_searchSyohinDlg #sea_syohin_search_field01');
+            const btn = document.querySelector('#ne_dlg_searchSyohinDlg #ne_dlg_btn2_searchSyohinDlg');
+
+            if (!input || !btn) {
+                console.warn('検索フォームが見つかりません');
+                return;
+            }
+
+            input.value = productCode;
+            btn.click();
+
+            const observer = new MutationObserver((mutations, obs) => {
+                const table = document.querySelector('#ne_dlg_searchSyohinDlg #searchsyohin_tablene_table');
+                if (table) {
+                    const rows = table.querySelectorAll('tbody tr');
+                    if (rows.length > 1) {
+                        const headerCells = rows[0].querySelectorAll('td');
+                        const dataCells = rows[1].querySelectorAll('td');
+
+                        let freeStockIndex = -1;
+                        headerCells.forEach((cell, index) => {
+                            const div = cell.querySelector('div');
+                            const headerText = div ? div.textContent.trim() : cell.textContent.trim();
+                            if (headerText === 'ﾌﾘｰ在庫') {
+                                freeStockIndex = index;
+                            }
+                        });
+
+                        if (freeStockIndex !== -1 && dataCells.length > freeStockIndex) {
+                            const freeStockValue = dataCells[freeStockIndex].textContent.trim();
+                            console.log('フリー在庫数:', freeStockValue);
+                            tdToUpdate.textContent = `フリー在庫数：${freeStockValue}`;
+                        } else {
+                            tdToUpdate.textContent = 'フリー在庫数：取得失敗';
+                        }
+
+                        const closeBtn = popup ? popup.querySelector('img[onclick*="searchSyohinDlg.hide"]') : null;
+                        if (closeBtn) {
+                            closeBtn.click();
+                            setTimeout(() => {
+                                if (popup) {
+                                    popup.style.display = originalDisplay || 'block';
+                                }
+                            }, 300);
+                        } else if (popup) {
+                            popup.style.display = originalDisplay || 'block';
+                        }
+
+                        obs.disconnect();
+                    }
+                }
+            });
+
+            observer.observe(document.querySelector('#ne_dlg_searchSyohinDlg'), {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        function adjustTableSize() {
+            const tableElem = document.querySelector('table[width="100"][height="100"]');
+            if (tableElem) {
+                tableElem.removeAttribute('width');
+                tableElem.removeAttribute('height');
+                tableElem.style.width = '85px';
+                tableElem.style.height = '85px';
+            }
+        }
+
+        const subinfo = document.getElementById('subinfo');
+        if (subinfo) {
+            const observer = new MutationObserver(() => {
+                insertFreeStockRow();
+            });
+
+            observer.observe(subinfo, {
+                childList: true,
+                subtree: true,
+            });
+
+            insertFreeStockRow();
+        }
     }
 
     runPageScripts();
