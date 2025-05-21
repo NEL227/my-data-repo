@@ -4,7 +4,6 @@
 // @version      1.00.02
 // @description  各種スクリプトのセット
 // @match        *://*/*
-// @license      MIT
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
 // @grant        GM_getValue
