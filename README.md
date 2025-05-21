@@ -54,7 +54,7 @@ Tampermonkey によってインストール画面が表示されるので
 
 ### 3. スクリプトをインストール
 
-以下のリンクをクリックして、業務効率化ツールの統合スクリプトを Tampermonkey に追加してください：
+以下のリンクをクリックして、スクリプトを Tampermonkey に追加してください：
 
 👉 [業務効率化ツールローダーをインストール](https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツールローダー.user.js)
 
