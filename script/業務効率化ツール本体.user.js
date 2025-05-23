@@ -13,6 +13,8 @@
 // @run-at       document-end
 // @connect      plus-nao.com
 // @connect      work-toolkit.vercel.app
+// @updateURL    https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/%E6%A5%AD%E5%8B%99%E5%8A%B9%E7%8E%87%E5%8C%96%E3%83%84%E3%83%BC%E3%83%AB%E6%9C%AC%E4%BD%93.user.js
+// @downloadURL  https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/%E6%A5%AD%E5%8B%99%E5%8A%B9%E7%8E%87%E5%8C%96%E3%83%84%E3%83%BC%E3%83%AB%E6%9C%AC%E4%BD%93.user.js
 // ==/UserScript==
 
 (async function () {
