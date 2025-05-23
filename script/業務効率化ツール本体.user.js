@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.01.00
+// @version      1.02.00
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -25,9 +25,8 @@
         "autoInsertColor", "enhanceStockTable", "copyMakerStockTable", "enhanceAxisCodeManager",
         "personalMemo", "removeUnwantedImgs","loadAllImages", "dlMergedImgs", "imgSizeCheck", "enhanceNewAlpha",
         "orderStatusCheck", "bulkOrderCheck", "axisReminder", "nonColorSizeReminder",
-        "axisCodeErrorCheck", "autoReplaceAxisCode","denpyoUpdateGuard","applyTagStyle","denpyoReflector",
+        "axisCodeErrorCheck", "autoReplaceAxisCode","denpyoUpdateGuard","applyTagStyle","denpyoAutoReflect",
         "jyuchuDateCheck", "freeStockCheck"
-
     ];
 
     const settings = {};
@@ -169,7 +168,7 @@
                 <div style="padding-left: 20px; margin-top: 10px;">
                   ${createCheckboxAndDetails('denpyoUpdateGuard', '伝票更新警告機能', '誤操作防止のため納品書印刷済み・印刷待ちの伝票に対して<br>更新前に警告を表示')}
                   ${createCheckboxAndDetails('applyTagStyle', '旧伝票タグ整列', '旧伝票のタグのスタイルを整えてトラディショナルのようにする')}
-                  ${createCheckboxAndDetails('denpyoReflector', '複写伝票反映', '複写先とその元に伝票番号をワンクリックで自動入力')}
+                  ${createCheckboxAndDetails('denpyoAutoReflect', '複写伝票処理自動化', '複写後にボタンを表示<br>ワンクリックで売単価0、支払方法を支払済みに設定<br>新規登録押下時、元伝票と複写伝票の作業欄に伝票番号を記載し「自動送信メール停止処理」にチェックを入れて登録')}
                   ${createCheckboxAndDetails('jyuchuDateCheck', '受注日チェック', '受注日が6ヶ月以上前の場合は警告を表示<br>再検索ボタンで最新の受注日を検索して開き直す')}
                   ${createCheckboxAndDetails('freeStockCheck', 'フリー在庫数チェック', '商品コードをダブルクリックで、その他情報にフリー在庫数を記載')}
                 </div>
@@ -514,9 +513,9 @@
                     run: applyTagStyle,
                 },
                 {
-                    name: '複写伝票反映',
-                    isEnabled: () => settings.denpyoReflector,
-                    run: denpyoReflector,
+                    name: '複写伝票処理自動化',
+                    isEnabled: () => settings.denpyoAutoReflect,
+                    run: denpyoAutoReflect,
                 },
                 {
                     name: '受注日チェック',
@@ -9235,10 +9234,19 @@ transition: all 0.3s ease-in-out;
         function isBusinessHours() {
             const now = new Date();
             const nowJST = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+
             const day = nowJST.getDay();
             const hour = nowJST.getHours();
+            const minute = nowJST.getMinutes();
+
             const isWeekday = day >= 1 && day <= 5;
-            const isWorkHours = hour >= 6 && hour < 19;
+
+            const totalMinutes = hour * 60 + minute;
+            const startMinutes = 6 * 60 + 30;
+            const endMinutes = 19 * 60;
+
+            const isWorkHours = totalMinutes >= startMinutes && totalMinutes < endMinutes;
+
             return isWeekday && isWorkHours;
         }
 
@@ -9597,44 +9605,64 @@ transition: all 0.3s ease-in-out;
         });
     }
 
-    function denpyoReflector(){
+    function denpyoAutoReflect(){
 
         const OLD_KEY = 'jyuchu_denpyo_no_old';
         const NEW_KEY = 'jyuchu_denpyo_no';
         const FLAG_KEY = 'update_flag';
 
         window.addEventListener('load', () => {
-            const myDenpyo = document.getElementById('jyuchu_denpyo_no')?.value;
-            if (!myDenpyo) return;
+            localStorage.removeItem(NEW_KEY);
 
-            const oldVal = localStorage.getItem(NEW_KEY);
-            if (oldVal && oldVal !== myDenpyo) {
-                localStorage.setItem(OLD_KEY, oldVal);
-            }
-            localStorage.setItem(NEW_KEY, myDenpyo);
+            const inputElem = document.getElementById('jyuchu_denpyo_no');
+            if (!inputElem) return;
 
-            addReflectButton();
+            let lastVal = '';
+            let wasEmpty = true;
+            let initialized = false;
 
-            let lastValue = myDenpyo;
+            setTimeout(() => {
+                initialized = true;
+            }, 1000);
+
             setInterval(() => {
-                const currentValue = document.getElementById('jyuchu_denpyo_no')?.value;
-                if (currentValue && currentValue !== lastValue) {
-                    const oldVal = localStorage.getItem(NEW_KEY);
-                    if (oldVal && oldVal !== currentValue) {
-                        localStorage.setItem(OLD_KEY, oldVal);
+                const currentVal = inputElem.value;
+
+                if (currentVal === '') {
+                    wasEmpty = true;
+                } else {
+                    if (initialized && wasEmpty && currentVal !== lastVal) {
+                        localStorage.setItem(NEW_KEY, currentVal);
+                        wasEmpty = false;
                     }
-                    localStorage.setItem(NEW_KEY, currentValue);
-                    lastValue = currentValue;
                 }
+                lastVal = currentVal;
             }, 500);
+
+            function oldValSaveHandler() {
+                const currentVal = inputElem.value || '';
+                if (currentVal) {
+                    localStorage.setItem(OLD_KEY, currentVal);
+                }
+            }
+
+            const observer = new MutationObserver((mutations, obs) => {
+                const btn = document.getElementById('ne_dlg_btn1_hukusyaDlg');
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        oldValSaveHandler();
+                        addReflectButton();
+                    });
+
+                    obs.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
         });
 
         window.addEventListener('storage', (event) => {
             if (event.key === FLAG_KEY) {
-                const myDenpyo = document.getElementById('jyuchu_denpyo_no')?.value;
-                if (!myDenpyo) return;
-
-                reflectDenpyo(myDenpyo);
+                reflectDenpyo();
             }
         });
 
@@ -9647,33 +9675,44 @@ transition: all 0.3s ease-in-out;
             return `${mm}/${dd}`;
         }
 
-        function reflectDenpyo(myDenpyo) {
+        async function reflectDenpyo(myDenpyo) {
             const textarea = document.getElementById('sagyosya_ran');
+            if (!textarea) {
+                return;
+            }
 
             const oldVal = localStorage.getItem(OLD_KEY) || '';
             const newVal = localStorage.getItem(NEW_KEY) || '';
 
-            const oldLine = (oldVal === myDenpyo || !oldVal) ? '' : `元伝：${oldVal}`;
-            const newLine = (newVal === myDenpyo || !newVal) ? '' : `${getTodayDate()} 複写：${newVal}`;
+            const oldLine = oldVal ? `（元伝: ${oldVal}）` : '';
+            const newLine = newVal ? `${getTodayDate()}（複写: ${newVal}）` : '';
+
             const lines = [oldLine, newLine].filter(line => line !== '');
 
+            if (lines.length === 0) return;
+
             const existingText = textarea.value || '';
-            const newText = lines.join('\n');
-            if (!newText) return;
 
-            const cleanedText = existingText
-            .split('\n')
-            .filter(line => !(line.includes(oldVal) || line.includes(newVal)))
-            .join('\n');
+            let combinedText = lines.join('\n') + (existingText ? '\n' + existingText : '');
 
-            textarea.value = [newText, cleanedText].filter(Boolean).join('\n');
+            const jyuchuInput = document.getElementById('jyuchu_denpyo_no');
+            if (jyuchuInput) {
+                const currentVal = jyuchuInput.value;
+                if (currentVal) {
+                    const textLines = combinedText.split('\n');
+                    const filteredLines = textLines.filter(line => !line.includes(currentVal));
+                    combinedText = filteredLines.join('\n');
+                }
+            }
+
+            textarea.value = combinedText;
         }
 
         function addReflectButton() {
             const targetTd = document.querySelector('#jyuyou_check_head td.group_head');
 
             const button = document.createElement('button');
-            button.textContent = '複写反映';
+            button.textContent = '複写処理';
             Object.assign(button.style, {
                 position: 'absolute',
                 top: '0',
@@ -9692,15 +9731,172 @@ transition: all 0.3s ease-in-out;
             targetTd.style.position = 'relative';
             targetTd.appendChild(button);
 
-            button.addEventListener('click', () => {
+            button.addEventListener('click', async (event) => {
                 event.preventDefault();
                 event.stopPropagation();
+                button.remove();
+
+                resetFormFields();
+                resetTable();
+
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = '新規登録を押して複写自動処理を続行します';
+                Object.assign(messageDiv.style, {
+                    position: 'fixed',
+                    bottom: '20px',
+                    left: '20px',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    zIndex: 10000,
+                    boxShadow: '0 0 6px rgba(0,0,0,0.3)',
+                });
+
+                document.body.appendChild(messageDiv);
+
+                await waitForJyuchuDenpyoNo();
+
+                messageDiv.remove();
 
                 localStorage.setItem(FLAG_KEY, Date.now().toString());
-                const myDenpyo = document.getElementById('jyuchu_denpyo_no')?.value;
-                if (myDenpyo) reflectDenpyo(myDenpyo);
+                await reflectDenpyo();
+                handleNumberInput();
             });
         }
+
+        function resetFormFields() {
+            const resetIds = [
+                'syohin_kin', 'zei_kin', 'tesuryo_kin', 'hasou_kin', 'sonota_kin', 'point', 'goukei_kin'
+            ];
+
+            const select = document.getElementById('siharai_kbn');
+            if (select) {
+                select.value = '99';
+                select.dispatchEvent(new Event('change'));
+            }
+
+            resetIds.forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) {
+                    elem.value = '0';
+                    elem.dispatchEvent(new Event('input'));
+                    elem.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        const handleNumberInput = (val) => {
+            const popupButton = document.getElementById('show-jidousousin-btn');
+            if (!popupButton) {
+                return;
+            }
+            popupButton.click();
+
+            const maxWaitMs = 5000;
+            const intervalMs = 200;
+            let waited = 0;
+
+            const waitForPopupAndOperate = () => {
+                const stopMailCheckbox = document.getElementById('stop_mail_j');
+                const registerButton = document.getElementById('ne_dlg_btn1_ne_Dialog');
+                const closeButton = document.getElementById('ne_dlg_btn0_ne_Dialog');
+
+                if (stopMailCheckbox && registerButton && closeButton) {
+                    if (!stopMailCheckbox.checked) {
+                        stopMailCheckbox.click();
+                        registerButton.click();
+                    } else {
+                        closeButton.click();
+                    }
+
+                } else {
+                    if (waited >= maxWaitMs) {
+                        return;
+                    }
+                    waited += intervalMs;
+                    setTimeout(waitForPopupAndOperate, intervalMs);
+                }
+            };
+
+            setTimeout(waitForPopupAndOperate, intervalMs);
+        };
+
+        function waitForJyuchuDenpyoNo(interval = 100) {
+            return new Promise((resolve) => {
+                const check = () => {
+                    const val = document.getElementById('jyuchu_denpyo_no')?.value;
+                    if (val && val.trim() !== '') {
+                        resolve();
+                    } else {
+                        setTimeout(check, interval);
+                    }
+                };
+
+                check();
+            });
+        }
+
+        const simulateInputChange = (input, value) => {
+
+            input.focus();
+            input.value = value;
+
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+
+            const parentCell = input.closest('td');
+            if (parentCell) {
+                input.blur();
+                parentCell.textContent = value;
+            }
+        };
+
+        const resetTable = () => {
+
+            const table = document.getElementById('jyuchuMeisai_tablene_table');
+            if (!table) {
+                return;
+            }
+
+            const rows = Array.from(table.rows);
+            if (rows.length < 2) {
+                return;
+            }
+
+            const headerTexts = Array.from(rows[0].cells).map(cell => cell.textContent.trim());
+            const targetIndices = ['売単価', '小計'].map(col => headerTexts.indexOf(col)).filter(i => i !== -1);
+
+            if (targetIndices.length === 0) {
+                return;
+            }
+
+            let delay = 0;
+            rows.slice(1).forEach((row, rowIndex) => {
+                targetIndices.forEach(index => {
+                    const cell = row.cells[index];
+                    if (!cell) {
+                        return;
+                    }
+
+                    setTimeout(() => {
+                        cell.click();
+
+                        setTimeout(() => {
+                            const editInput = cell.querySelector('input[type="text"]:not([readonly])');
+                            if (!editInput) {
+                                return;
+                            }
+                            simulateInputChange(editInput, '0');
+                        }, 150);
+                    }, delay);
+
+                    delay += 400;
+                });
+            });
+
+        };
     }
 
     function jyuchuDateCheck() {
