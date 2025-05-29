@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.03.01
+// @version      1.03.02
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -169,7 +169,7 @@
                 <summary style="font-weight: bold; cursor: pointer;">コンシェルジュ用</summary>
                 <div style="padding-left: 20px; margin-top: 10px;">
                   ${createCheckboxAndDetails('denpyoUpdateGuard', '伝票更新警告機能', '誤操作防止のため納品書印刷済み・印刷待ちの伝票に対して<br>更新前に警告を表示')}
-                  ${createCheckboxAndDetails('applyTagStyle', '旧伝票タグ整列', '旧伝票のタグのスタイルを整えてトラディショナルのようにする')}
+                  ${createCheckboxAndDetails('applyTagStyle', '旧伝票タグ整列', '旧伝票のタグの見た目を整えてトラディショナルのようにする<br>よく使用するものに色を付ける<br>編集でクリックから個別選択解除')}
                   ${createCheckboxAndDetails('denpyoAutoReflect', '複写伝票処理自動化', '複写後にボタンを表示<br>ワンクリックで売単価0、支払方法を支払済みに設定<br>新規登録押下時、元伝票と複写伝票の作業欄に伝票番号を記載し「自動送信メール停止処理」にチェックを入れて登録')}
                   ${createCheckboxAndDetails('jyuchuDateCheck', '受注日チェック', '受注日が6ヶ月以上前の場合は警告を表示<br>再検索ボタンで最新の受注日を検索して開き直す')}
                   ${createCheckboxAndDetails('freeStockCheck', 'フリー在庫数チェック', '商品コードをダブルクリックで、その他情報にフリー在庫数を記載')}
@@ -9538,57 +9538,85 @@ transition: all 0.3s ease-in-out;
 
     function applyTagStyle(){
 
+        const TAG_COLORS = {
+            "モール未処理":      { bg: "rgb(251, 246, 173)", color: "rgb(0, 0, 0)" },
+            "モールキャンセル":  { bg: "rgb(255, 161, 10)", color: "rgb(0, 0, 0)" },
+            "楽天チャット":      { bg: "rgb(177, 22, 25)", color: "rgb(255, 255, 255)" },
+            "LINE":             { bg: "rgb(63, 255, 10)", color: "rgb(0, 0, 0)" },
+            "返品or交換":        { bg: "rgb(29, 147, 6)", color: "rgb(255, 255, 255)" },
+            "住所不明":          { bg: "rgb(224, 128, 209)", color: "rgb(0, 0, 0)" },
+            "入荷待ち":          { bg: "rgb(227, 255, 10)", color: "rgb(0, 0, 0)" },
+            "Yahooチャット":     { bg: "rgb(255, 133, 10)", color: "rgb(0, 0, 0)" },
+            "キャンセル伺い":    { bg: "rgb(243, 79, 108)", color: "rgb(0, 0, 0)" },
+            "モール保留":        { bg: "rgb(69, 211, 84)", color: "rgb(0, 0, 0)" }
+        };
+
         function addCustomStyles() {
             if (document.getElementById('custom-tag-input-style')) return;
-
             const style = document.createElement('style');
             style.id = 'custom-tag-input-style';
             style.textContent = `
-            #tag_input.custom-style {
-                -webkit-text-size-adjust: 100%;
-                --color-capturing: #8f8;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-                color: #333333;
-                font-size: 11px;
-                line-height: 18px;
-                box-sizing: border-box;
-                padding: 3px 6px 2px 6px;
-                width: 100%;
-                background-color: #fdfdfd;
-                border-right: 1px solid #ccc;
-                border-bottom: 1px solid #ccc;
-                border-left: 1px solid #ccc;
-                letter-spacing: 0;
-                position: relative;
-            }
-            #tag_input.custom-style a {
-                -webkit-text-size-adjust: 100%;
-                --color-capturing: #8f8;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-                font-size: 11px;
-                box-sizing: border-box;
-                color: #000;
-                border: 1px solid #000;
-                border-radius: 9px;
-                display: inline-block;
-                font-weight: bold;
-                letter-spacing: normal;
-                line-height: 1.2;
-                margin-bottom: 4px;
-                margin-right: 4px;
-                text-decoration: none;
-                padding: 1px 4px;
-                outline: none;
-                word-break: break-all;
-                cursor: pointer;
-                user-select: none;
-                background-color: transparent;
-                transition: background-color 0.2s ease;
-            }
-            #tag_input.custom-style a.selected-tag {
-                background-color: #d0f0c0;
-            }
-        `;
+#tag_input.custom-style {
+    -webkit-text-size-adjust: 100%;
+    --color-capturing: #8f8;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #333333;
+    font-size: 11px;
+    line-height: 18px;
+    box-sizing: border-box;
+    padding: 3px 6px 2px 6px;
+    width: 100%;
+    background-color: #fdfdfd;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    letter-spacing: 0;
+    position: relative;
+}
+#tag_input.custom-style a {
+    -webkit-text-size-adjust: 100%;
+    --color-capturing: #8f8;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    box-sizing: border-box;
+    color: #000;
+    border: 1px solid #000;
+    border-radius: 9px;
+    display: inline-block;
+    font-weight: bold;
+    letter-spacing: normal;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    margin-right: 4px;
+    text-decoration: none;
+    padding: 1px 4px;
+    outline: none;
+    word-break: break-all;
+    cursor: pointer;
+    user-select: none;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+}
+#tag_input.custom-style a.selected-tag {
+    outline: 2px solid #0078d7 !important;
+    box-shadow: 0 0 0 3px rgba(0,120,215,0.25);
+    position: relative;
+}
+#tag_input.custom-style a.selected-tag::after {
+    content: "✓";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 13px;
+    color: #0078d7;
+    border: 2px solid #0078d7;
+    background: #fff;
+    border-radius: 50%;
+    padding: 0 2px;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+    `;
             document.head.appendChild(style);
         }
 
@@ -9614,6 +9642,7 @@ transition: all 0.3s ease-in-out;
 
         function applyCustomStyle() {
             const tagInput = document.getElementById('tag_input');
+            if (!tagInput) return;
 
             tagInput.classList.add('custom-style');
 
@@ -9623,6 +9652,16 @@ transition: all 0.3s ease-in-out;
             anchors.forEach(a => {
                 const text = a.textContent.trim();
 
+                if (TAG_COLORS.hasOwnProperty(text)) {
+                    a.style.backgroundColor = TAG_COLORS[text].bg;
+                    a.style.color = TAG_COLORS[text].color;
+                    a.style.border = '1.5px solid #000';
+                } else {
+                    a.style.backgroundColor = '';
+                    a.style.color = '';
+                    a.style.border = '';
+                }
+
                 if (selectedTags.includes(text)) {
                     a.classList.add('selected-tag');
                 } else {
@@ -9630,21 +9669,69 @@ transition: all 0.3s ease-in-out;
                 }
 
                 if (!a.dataset.listenerAdded) {
-                    a.addEventListener('click', () => {
+                    a.addEventListener('click', function(e) {
                         const jyuchuTagTextarea = document.getElementById('jyuchu_tag');
                         if (!jyuchuTagTextarea) return;
-                        const event = new Event('input', { bubbles: true });
-                        jyuchuTagTextarea.dispatchEvent(event);
-                    });
+
+                        if (a.classList.contains('selected-tag')) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            e.stopPropagation();
+
+                            const tagPattern = new RegExp(`\\s*\\[${escapeRegExp(text)}\\]\\s*`, "g");
+                            jyuchuTagTextarea.value = jyuchuTagTextarea.value.replace(tagPattern, " ");
+                            jyuchuTagTextarea.value = jyuchuTagTextarea.value.replace(/\s+/g, " ").trim();
+
+                            const event = new Event('input', { bubbles: true });
+                            jyuchuTagTextarea.dispatchEvent(event);
+
+                        } else {
+                            const event = new Event('input', { bubbles: true });
+                            jyuchuTagTextarea.dispatchEvent(event);
+                        }
+
+                        setTimeout(applyCustomStyle, 10);
+                    }, true);
+
                     a.dataset.listenerAdded = 'true';
                 }
+
             });
         }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+
+        function observeTagInput() {
+            const tagInput = document.getElementById('tag_input');
+            if (!tagInput || tagInput.dataset.observerAdded) return;
+
+            const observer = new MutationObserver(() => {
+                applyCustomStyle();
+            });
+
+            observer.observe(tagInput, { childList: true, subtree: true });
+            tagInput.dataset.observerAdded = 'true';
+        }
+
+        let prevDenpyoNo = null;
+        setInterval(() => {
+            const denpyoInput = document.getElementById('jyuchu_denpyo_no');
+            if (!denpyoInput) return;
+            const nowNo = denpyoInput.value;
+            if (prevDenpyoNo !== nowNo) {
+                prevDenpyoNo = nowNo;
+                applyCustomStyle();
+            }
+        }, 700);
 
         window.addEventListener('load', () => {
             if (isOldStyle()) {
                 addCustomStyles();
                 applyCustomStyle();
+                observeTagInput();
 
                 const jyuchuTagTextarea = document.getElementById('jyuchu_tag');
                 if (jyuchuTagTextarea) {
@@ -10371,6 +10458,8 @@ transition: all 0.3s ease-in-out;
                     } else {
                         setTimeout(() => { window.close(); }, 500);
                     }
+                } else {
+                    await GM_setValue(mallFlagKey, false);
                 }
             });
             return;
@@ -10516,6 +10605,7 @@ transition: all 0.3s ease-in-out;
                                         clearInterval(intervalId);
                                         instructionMessage.style.display = 'none';
                                         GM_setValue('orderNumber', '');
+                                        GM_setValue('mall_action_in_progress', false);
                                     }
                                 }
                             }, 500);
