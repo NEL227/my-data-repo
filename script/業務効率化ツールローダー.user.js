@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツールローダー
 // @namespace    http://tampermonkey.net/
-// @version      1.00
+// @version      1.01
 // @description  業務支援ツールを自動で取得・更新するローダースクリプト
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -11,6 +11,7 @@
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // @grant        GM_notification
+// @grant        GM_addValueChangeListener
 // @connect      plus-nao.com
 // @connect      raw.githubusercontent.com
 // @connect      work-toolkit.vercel.app
