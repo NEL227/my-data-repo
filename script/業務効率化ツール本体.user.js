@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.03.00
+// @version      1.03.01
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -10337,8 +10337,18 @@ transition: all 0.3s ease-in-out;
                 if (!isMallAction) return;
                 await GM_setValue(mallFlagKey, true);
                 const shopTypeNo = await GM_getValue('lastshopTypeNo', null);
-                window.open(`https://starlight.plusnao.co.jp/rms/index?shop_type=${shopTypeNo}&id=1354`, "_blank");
-                setTimeout(() => { window.close(); }, 500);
+                const popup = window.open(`https://starlight.plusnao.co.jp/rms/index?shop_type=${shopTypeNo}&id=1354`, "_blank");
+
+                if (!popup || popup.closed || typeof popup.closed == 'undefined') {
+                    alert(
+                        "ポップアップがブロックされました。\n" +
+                        "画面上部やブラウザのアドレスバー付近にブロックの案内が出ている場合は\n" +
+                        "「許可」を選択してください。\n\n" +
+                        "許可後にもう一度操作をやり直してください。"
+                    );
+                } else {
+                    setTimeout(() => { window.close(); }, 500);
+                }
             });
             return;
         }
@@ -10349,10 +10359,18 @@ transition: all 0.3s ease-in-out;
                 if (layoutContent && layoutContent.innerText.includes("エラー")) {
                     await GM_setValue(mallFlagKey, true);
                     const shopTypeNo = await GM_getValue('lastshopTypeNo', null);
-                    window.open(`https://starlight.plusnao.co.jp/rms/index?shop_type=${shopTypeNo}&id=1354`, "_blank");
-                    setTimeout(() => { window.close(); }, 500);
-                } else {
-                    await GM_setValue(mallFlagKey, false);
+                    const popup = window.open(`https://starlight.plusnao.co.jp/rms/index?shop_type=${shopTypeNo}&id=1354`, "_blank");
+
+                    if (!popup || popup.closed || typeof popup.closed == 'undefined') {
+                        alert(
+                            "ポップアップがブロックされました。\n" +
+                            "画面上部やブラウザのアドレスバー付近にブロックの案内が出ている場合は\n" +
+                            "「許可」を選択してください。\n\n" +
+                            "許可後にもう一度操作をやり直してください。"
+                        );
+                    } else {
+                        setTimeout(() => { window.close(); }, 500);
+                    }
                 }
             });
             return;
