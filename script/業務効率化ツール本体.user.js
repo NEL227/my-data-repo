@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツール本体
 // @namespace    http://tampermonkey.net/
-// @version      1.03.02
+// @version      1.4.0
 // @description  各種スクリプトのセット
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -28,7 +28,7 @@
         "personalMemo", "removeUnwantedImgs","loadAllImages", "dlMergedImgs", "imgSizeCheck", "enhanceNewAlpha",
         "orderStatusCheck", "bulkOrderCheck", "axisReminder", "nonColorSizeReminder",
         "axisCodeErrorCheck", "autoReplaceAxisCode","denpyoUpdateGuard","applyTagStyle","denpyoAutoReflect",
-        "jyuchuDateCheck", "freeStockCheck", "autoLogin",
+        "jyuchuDateCheck", "freeStockCheck", "autoLogin", "denpyoBunkatsuAutoReflect",
     ];
 
     const settings = {};
@@ -174,6 +174,7 @@
                   ${createCheckboxAndDetails('jyuchuDateCheck', '受注日チェック', '受注日が6ヶ月以上前の場合は警告を表示<br>再検索ボタンで最新の受注日を検索して開き直す')}
                   ${createCheckboxAndDetails('freeStockCheck', 'フリー在庫数チェック', '商品コードをダブルクリックで、その他情報にフリー在庫数を記載')}
                   ${createCheckboxAndDetails('autoLogin', '自動ログイン', '楽天系モールへの自動ログイン<br>前提条件としてWebsystemへのログインと楽天IDとパスワードへの事前入力が必須')}
+                  ${createCheckboxAndDetails('denpyoBunkatsuAutoReflect', '分割伝票処理自動化', '伝票分割時に元伝票・分割先に伝票番号を作業用欄へ自動反映<br>入荷待ちタグの挿入と確認チェックの自動化')}
                 </div>
               </details>
             </section>
@@ -534,6 +535,11 @@
                     name: '自動ログイン',
                     isEnabled: () => settings.autoLogin,
                     run: autoLogin,
+                },
+                {
+                    name: '分割伝票処理自動化',
+                    isEnabled: () => settings.denpyoBunkatsuAutoReflect,
+                    run: denpyoBunkatsuAutoReflect,
                 },
             ],
         },
@@ -10491,6 +10497,7 @@ transition: all 0.3s ease-in-out;
 
                         const value = select.value;
                         const mappedValue = valueMapping[parseInt(value)];
+
                         if (mappedValue) {
                             await GM_setValue(mallFlagKey, true);
 
@@ -10623,6 +10630,151 @@ transition: all 0.3s ease-in-out;
             });
 
             observer.observe(document.body, { childList: true, subtree: true });
+        }
+    }
+
+    function denpyoBunkatsuAutoReflect() {
+        const OLD_KEY = 'bunkatsu_auto_jyuchu_denpyo_no_old';
+        const NEW_KEY = 'bunkatsu_auto_jyuchu_denpyo_no_new';
+        const FLAG_KEY = 'bunkatsu_auto_update_flag';
+
+        window.addEventListener('load', () => {
+            const observer = new MutationObserver((mutations, obs) => {
+                const btn = document.getElementById('ne_dlg_btn2_bunkatuDlg');
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        localStorage.removeItem(OLD_KEY);
+                        localStorage.removeItem(NEW_KEY);
+                        localStorage.removeItem(FLAG_KEY);
+                        const inputElem = document.getElementById('jyuchu_denpyo_no');
+                        const oldVal = inputElem ? inputElem.value : '';
+                        if (oldVal) {
+                            localStorage.setItem(OLD_KEY, oldVal);
+                        }
+                    });
+                    obs.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+
+        window.addEventListener('load', () => {
+            const inputElem = document.getElementById('jyuchu_denpyo_no');
+            const oldVal = localStorage.getItem(OLD_KEY);
+            if (inputElem && oldVal) {
+                const newVal = inputElem.value;
+                if (newVal && newVal !== oldVal) {
+                    localStorage.setItem(NEW_KEY, newVal);
+                    localStorage.setItem(FLAG_KEY, Date.now().toString());
+
+                    let retry = 0;
+                    const maxRetry = 20;
+                    const interval = 250;
+                    const doMark = () => {
+                        let success = true;
+
+                        const chk = document.getElementById('chk_kakunin_check_kbn');
+                        if (chk && !chk.checked) {
+                            chk.checked = true;
+                            chk.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        if (!chk) {
+                            success = false;
+                        }
+
+                        const tagArea = document.getElementById('jyuchu_tag');
+                        let tagEdited = false;
+                        if (tagArea) {
+                            const addTag = '[入荷待ち]';
+                            let currentTag = tagArea.value || '';
+                            if (!currentTag.includes(addTag)) {
+                                tagArea.value = currentTag + addTag;
+                                tagArea.dispatchEvent(new Event('input', { bubbles: true }));
+                                tagArea.dispatchEvent(new Event('change', { bubbles: true }));
+                                tagEdited = true;
+                            }
+                        }
+                        if (!tagArea) {
+                            success = false;
+                        }
+
+                        if (tagEdited) {
+                            const editBtn = document.querySelector('a[onclick*="Element.show(\'jyuchu_tag\'"]');
+                            if (editBtn) {
+                                editBtn.click();
+                            }
+                            setTimeout(() => {
+                                const closeBtn = document.querySelector('a[onclick*="tagshow()"]');
+                                if (closeBtn) {
+                                    closeBtn.click();
+                                }
+                            }, 10);
+                        }
+
+                        if (!success && retry < maxRetry) {
+                            retry++;
+                            setTimeout(doMark, interval);
+                        }
+                        if (success) {
+                            setTimeout(() => {
+                                reflectDenpyo();
+                                localStorage.removeItem(OLD_KEY);
+                                localStorage.removeItem(NEW_KEY);
+                            }, 50);
+                        }
+                    };
+                    doMark();
+                }
+            }
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === FLAG_KEY) {
+                reflectDenpyo();
+            }
+        });
+
+        function getTodayDate() {
+            const date = new Date();
+            const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+            const jstDate = new Date(utc + (9 * 60 * 60000));
+            const mm = String(jstDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(jstDate.getDate()).padStart(2, '0');
+            return `${mm}/${dd}`;
+        }
+
+        async function reflectDenpyo() {
+            const textarea = document.getElementById('sagyosya_ran');
+            if (!textarea) {
+                return;
+            }
+
+            const oldVal = localStorage.getItem(OLD_KEY) || '';
+            const newVal = localStorage.getItem(NEW_KEY) || '';
+
+            const oldLine = oldVal ? `（元伝: ${oldVal}）` : '';
+            const newLine = newVal ? `${getTodayDate()}（分割: ${newVal}）` : '';
+
+            const lines = [oldLine, newLine].filter(line => line !== '');
+
+            if (lines.length === 0) {
+                return;
+            }
+
+            const existingText = textarea.value || '';
+            let combinedText = lines.join('\n') + (existingText ? '\n' + existingText : '');
+
+            const jyuchuInput = document.getElementById('jyuchu_denpyo_no');
+            if (jyuchuInput) {
+                const currentVal = jyuchuInput.value;
+                if (currentVal) {
+                    const textLines = combinedText.split('\n');
+                    const filteredLines = textLines.filter(line => !line.includes(currentVal));
+                    combinedText = filteredLines.join('\n');
+                }
+            }
+
+            textarea.value = combinedText;
         }
     }
 
