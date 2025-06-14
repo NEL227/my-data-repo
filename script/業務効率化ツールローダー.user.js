@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツールローダー
 // @namespace    http://tampermonkey.net/
-// @version      1.01.01
+// @version      1.2.0
 // @description  業務支援ツールを自動で取得・更新するローダースクリプト
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -16,6 +16,7 @@
 // @connect      plus-nao.com
 // @connect      raw.githubusercontent.com
 // @connect      work-toolkit.vercel.app
+// @connect      tk2-217-18298.vs.sakura.ne.jp
 // @run-at       document-end
 // @updateURL    https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツールローダー.user.js
 // @downloadURL  https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツールローダー.user.js
@@ -23,6 +24,10 @@
 
 (function () {
     'use strict';
+
+    if (window.top !== window.self) return;
+    if (window.__my_unique_toolkit_loader) return;
+    window.__my_unique_toolkit_loader = true;
 
     const SCRIPT_URL = 'https://raw.githubusercontent.com/NEL227/work-toolkit/main/script/業務効率化ツール本体.user.js';
     const STORAGE_KEY_CODE = 'cached_script_code';
@@ -89,11 +94,38 @@
 
     function useCachedScript() {
         const code = GM_getValue(STORAGE_KEY_CODE, '');
-        if (code) {
+        let brokenCount = GM_getValue('cache_broken_count', 0);
+
+        if (code && isCacheValid(code)) {
+            GM_setValue('cache_broken_count', 0);
             injectScript(code);
         } else {
-            console.warn("キャッシュされたスクリプトが存在しません。");
+            if (brokenCount >= 3) {
+                return;
+            }
+            brokenCount++;
+            GM_setValue('cache_broken_count', brokenCount);
+
+            if (brokenCount === 5) {
+                alert("何度もキャッシュ破損を検出しました。スクリプト開発者へご連絡ください。");
+                return;
+            }
+            alert("⚠️ スクリプトキャッシュが壊れているため再取得します。");
+
+            fetchAndUpdateScript(true);
+
+            setTimeout(() => {
+                if (confirm("再取得が完了しました。\nページをリロードして最新のスクリプトを反映しますか？")) {
+                    location.reload();
+                } else {
+                    alert("リロードを中止しました。手動でページを再読み込みしてください。");
+                }
+            }, 2500);
         }
+    }
+
+    function isCacheValid(code) {
+        return code.includes('// @integrity-check:toolkit_end');
     }
 
     function injectScript(code) {
