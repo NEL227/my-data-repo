@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         業務効率化ツールローダー
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.2.1
 // @description  業務支援ツールを自動で取得・更新するローダースクリプト
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
@@ -46,7 +46,7 @@
     if (lastUpdate !== today) {
         fetchAndUpdateScript(false);
     } else {
-        useCachedScript();
+        (async () => await useCachedScript())();
     }
 
     function fetchAndUpdateScript(isManual) {
@@ -92,26 +92,30 @@
         });
     }
 
-    function useCachedScript() {
+    async function useCachedScript() {
         const code = GM_getValue(STORAGE_KEY_CODE, '');
         let brokenCount = GM_getValue('cache_broken_count', 0);
 
-        if (code && isCacheValid(code)) {
+        const isValid = await isCacheValid(code);
+
+        if (code && isValid) {
             GM_setValue('cache_broken_count', 0);
             injectScript(code);
         } else {
-            if (brokenCount >= 3) {
+            if (brokenCount >= 5) {
+                console.warn("キャッシュ破損の再検出。読み込み停止。");
                 return;
             }
+
             brokenCount++;
             GM_setValue('cache_broken_count', brokenCount);
 
             if (brokenCount === 5) {
-                alert("何度もキャッシュ破損を検出しました。スクリプト開発者へご連絡ください。");
+                alert("⚠️ 何度もキャッシュ破損を検出しました。\nスクリプトの開発者へご連絡ください。");
                 return;
             }
-            alert("⚠️ スクリプトキャッシュが壊れているため再取得します。");
 
+            alert("⚠️ スクリプトキャッシュが壊れているため再取得します。");
             fetchAndUpdateScript(true);
 
             setTimeout(() => {
@@ -124,8 +128,29 @@
         }
     }
 
-    function isCacheValid(code) {
-        return code.includes('// @integrity-check:toolkit_end');
+    async function isCacheValid(code) {
+        const hashLine = code.match(/\/\/\s*@integrity-hash:\s*([a-f0-9]+)/i);
+        const expectedHash = hashLine ? hashLine[1] : null;
+        const hasMarker = code.includes('// @integrity-check:toolkit_end');
+        if (!expectedHash || !hasMarker) return false;
+
+        const codeForHash = code
+        .split('\n')
+        .filter(line => !line.includes('@integrity-hash:'))
+        .join('\n');
+
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(codeForHash);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const actualHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        //    console.log("[HASH検証] expected:", expectedHash);
+        //    console.log("[HASH検証] actual  :", actualHash);
+        //   console.log("[HASH対象コード]", codeForHash);
+
+        return actualHash === expectedHash;
     }
 
     function injectScript(code) {
